@@ -1,6 +1,44 @@
 
 window.addEventListener('DOMContentLoaded', () => {
 
+  const tabs = document.querySelectorAll('.tabheader__item'),
+        tabsContent = document.querySelectorAll('.tabcontent'),
+        tabPatent = document.querySelector('.tabheader__items');
+
+  function hideTabs() {
+    tabsContent.forEach(elem => {
+      elem.classList.add('hide');
+      elem.classList.remove('show', 'fade');
+    });
+    tabs.forEach(elem => {
+      elem.classList.remove('tabheader__item_active');
+    });
+  }
+
+  function showTabs(i = 0) {
+    tabsContent[i].classList.remove('hide');
+    tabsContent[i].classList.add('show', 'fade');
+    tabs[i].classList.add('tabheader__item_active');
+  }
+
+  hideTabs();
+  showTabs();
+
+  tabPatent.addEventListener('click', (e) => {
+
+    const target = e.target;
+
+    if (target && target.classList.contains('tabheader__item')) {
+      tabs.forEach((elem, i) => {
+        if(target == elem) {
+          hideTabs();
+          showTabs(i);
+        }
+      });
+    }
+  });
+
+
   const deadline = '2021-08-02';
 
   function getTimeRemaining(endtime) {
