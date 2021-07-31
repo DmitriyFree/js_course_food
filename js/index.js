@@ -150,12 +150,13 @@ window.addEventListener('DOMContentLoaded', () => {
   // Cards
 
   class Card {
-    constructor(src, alt, title, descr, price, parentSelector) {
+    constructor(src, alt, title, descr, price, parentSelector, ...classes) {
       this.src = src;
       this.alt = alt;
       this.title = title;
       this.descr = descr;
       this.price = price;
+      this.classes = classes;
       this.parent = document.querySelector(parentSelector);
       this.transfer = 27;
       this.parseToUAN();
@@ -165,21 +166,16 @@ window.addEventListener('DOMContentLoaded', () => {
       this.price = this.price * this.transfer;
     }
 
-//     <div class="menu__item">
-//     <img src="img/tabs/vegy.jpg" alt="vegy">
-//     <h3 class="menu__item-subtitle">Меню "Фитнес"</h3>
-//     <div class="menu__item-descr">Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!</div>
-//     <div class="menu__item-divider"></div>
-//     <div class="menu__item-price">
-//         <div class="menu__item-cost">Цена:</div>
-//         <div class="menu__item-total"><span>229</span> грн/день</div>
-//     </div>
-// </div>
-
     render() {
 
       const cardItem = document.createElement('div');
-      cardItem.classList.add('menu__item');
+
+      if (this.classes.length == 0) {
+        cardItem.classList.add('menu__item');
+      } else {
+        this.classes.forEach(item => cardItem.classList.add(item));
+      }
+
       cardItem.innerHTML=`
           <img src=${this.src} alt=${this.alt}>
           <h3 class="menu__item-subtitle">${this.title}</h3>
