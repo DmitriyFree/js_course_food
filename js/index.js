@@ -232,16 +232,10 @@ window.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (e) => {
 
       e.preventDefault();
-      console.dir(e);
 
       const statusMessage = document.createElement('img');
       statusMessage.src = message.loading;
       form.append(statusMessage);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', 'http://localhost:3000/posts');
-      xhr.setRequestHeader('Content-type', 'application/json');
-
 
       const formData = new FormData(form);
 
@@ -253,22 +247,23 @@ window.addEventListener('DOMContentLoaded', () => {
 
       const jsonData = JSON.stringify(obj);
 
-      xhr.send(jsonData);
 
-      xhr.addEventListener('load', () => {
-        console.log(Math.floor(xhr.status / 100));
-        if (Math.floor(xhr.status / 100) === 2) {
-          console.log(xhr.responseText);
-          showModalMessage(message.success);
-          form.reset();
-          statusMessage.remove();
-        } else {
-          console.log(xhr.responseText);
-          showModalMessage(message.fail);
-        }
+      fetch('http://localhost:3000/posts', {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json'
+        },
+        body: jsonData
+      }).then(data => data.json())
+      .then(data => {
+        console.log(data);
+        showModalMessage(message.success);
+        statusMessage.remove();
+      }).catch(() => {
+        showModalMessage(message.fail);
+      }).finally(() => {
+        form.reset();
       });
-
-
 
      });
   }
