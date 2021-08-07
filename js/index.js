@@ -39,7 +39,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  const deadline = '2021-08-02';
+  const deadline = '2021-08-08';
 
   function getTimeRemaining(endtime) {
 
@@ -105,7 +105,7 @@ window.addEventListener('DOMContentLoaded', () => {
     modal.classList.add('show');
     modal.classList.remove('hide');
     document.body.style.overflow = "hidden";
-    clearInterval(showModalTimer);
+    // clearInterval(showModalTimer);
   }
 
   function closeModal() {
@@ -136,7 +136,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const showModalTimer = setInterval(showModal, 5000);
+  // const showModalTimer = setInterval(showModal, 5000);
 
   function scrollShowModal() {
     if (document.documentElement.clientHeight + document.documentElement.scrollTop >= document.documentElement.scrollHeight) {
@@ -219,5 +219,64 @@ window.addEventListener('DOMContentLoaded', () => {
      '.menu .container'
   ).render();
 
+  // form
+
+  const forms = document.querySelectorAll('form');
+
+  const message = {
+    loading: 'Загрузк...',
+    success: 'Спасибо, скоро мы с вами свяжемся',
+    fail: 'Что-то пошло не так'
+  }
+
+  forms.forEach((item) => {
+    postData(item);
+  });
+
+  function postData(form) {
+    form.addEventListener('submit', (e) => {
+
+      e.preventDefault();
+
+      const statusMessage = document.createElement('div');
+      statusMessage.classList.add('status');
+      statusMessage.textContent = message.loading;
+      form.append(statusMessage);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'http://localhost:3000/posts');
+      xhr.setRequestHeader('Content-type', 'application/json');
+
+
+      const formData = new FormData(form);
+
+      const obj = {}
+
+      formData.forEach((val, key) => {
+        obj[key] = val;
+      });
+
+      const jsonData = JSON.stringify(obj);
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status == 200) {
+          statusMessage.textContent = message.success;
+          console.log(JSON.parse(xhr.responseText));
+        } else {
+          statusMessage.textContent = message.fail;
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        console.log('error');
+      });
+
+      xhr.send(jsonData);
+
+    });
+  }
+
 
 });
+
+
