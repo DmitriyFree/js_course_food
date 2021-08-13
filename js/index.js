@@ -292,6 +292,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const prev = document.querySelector('.offer__slider-prev'),
         next = document.querySelector('.offer__slider-next'),
         slides = document.querySelectorAll('.offer__slide'),
+        slider = document.querySelector('.offer__slider'),
         current = document.querySelector('#current'),
         total = document.querySelector('#total'),
         slidesWrapper = document.querySelector('.offer__slider-wrapper'),
@@ -314,11 +315,62 @@ window.addEventListener('DOMContentLoaded', () => {
     item.style.width = width;
   });
 
+  slider.style.position = 'relative';
+
+  const indicators = document.createElement('ol'),
+        dots = [];
+
+  indicators.classList.add('carousel-indicators');
+  indicators.style.cssText = `
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  margin-right: 15%;
+  margin-left: 15%;
+  list-style: none;
+  `;
+
+  slider.append(indicators);
+
+  for (let i = 0; i < slides.length; i++) {
+    const dot = document.createElement('li');
+    dot.setAttribute('data-slide-to', i + 1);
+    dot.style.cssText = `
+    box-sizing: content-box;
+    flex: 0 1 auto;
+    width: 30px;
+    height: 6px;
+    margin-right: 3px;
+    margin-left: 3px;
+    cursor: pointer;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    opacity: .5;
+    transition: opacity .6s ease;`;
+
+    if (i == 0) {
+      dot.style.opacity = 1;
+    }
+
+    indicators.append(dot);
+    dots.push(dot);
+  }
+
+  function removeNoDigits(str) {
+    return +str.replace(/\D/g, '')
+  }
+
   next.addEventListener('click', () => {
-    if (offset == +width.slice(0, -2) * (slides.length - 1)) {
+    if (offset == removeNoDigits(width) * (slides.length - 1)) {
       offset = 0;
     } else {
-      offset += +width.slice(0, -2);
+      offset += removeNoDigits(width) ;
     }
 
     slidesInner.style.transform = `translateX(-${offset}px)`;
@@ -330,13 +382,16 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     current.textContent = convertZero(showIndex);
+
+    dots.forEach(item => item.style.opacity = '0.5');
+    dots[showIndex - 1].style.opacity = 1;
   });
 
   prev.addEventListener('click', () => {
     if (offset <= 0) {
-      offset = +width.slice(0, -2) * (slides.length - 1);
+      offset = removeNoDigits(width) * (slides.length - 1);
     } else {
-      offset -= +width.slice(0, -2);
+      offset -= removeNoDigits(width)
     }
 
     slidesInner.style.transform = `translateX(-${offset}px)`;
@@ -349,7 +404,148 @@ window.addEventListener('DOMContentLoaded', () => {
 
     current.textContent = convertZero(showIndex);
 
+    dots.forEach(item => item.style.opacity = '0.5');
+    dots[showIndex - 1].style.opacity = 1;
   });
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', (e) => {
+      const slideTo = e.target.getAttribute('data-slide-to');
+      showIndex = slideTo;
+
+      offset = removeNoDigits(width)  * (slideTo - 1);
+
+
+    slidesInner.style.transform = `translateX(-${offset}px)`;
+
+    current.textContent = convertZero(showIndex);
+
+    dots.forEach(item => item.style.opacity = '0.5');
+    dots[showIndex - 1].style.opacity = 1;
+
+
+    });
+  });
+
+  // calculator
+
+  const result = document.querySelector('.calculating__result span');
+
+  let gender, height, weight, age, ratio;
+
+  if (localStorage.getItem('gender')) {
+    gender = localStorage.getItem('gender');
+  } else {
+    gender = 'female';
+    localStorage.setItem('gender', gender);
+  }
+
+  if (localStorage.getItem('ratio')) {
+    ratio = localStorage.getItem('ratio');
+  } else {
+    ratio = '1.375';
+    localStorage.setItem('ratio', ratio);
+  }
+
+  function initLocalSetting(selector, activeClass) {
+
+    // console.log(localStorage.getItem('gender'));
+
+    const elements = document.querySelectorAll(selector);
+
+    elements.forEach(item => {
+      item.classList.remove(activeClass);
+
+      if (item.getAttribute('id') === localStorage.getItem('gender')) {
+        item.classList.add(activeClass);
+      }
+      if(item.getAttribute('data-ratio') === localStorage.getItem('ratio')) {
+        item.classList.add(activeClass);
+      }
+    });
+  }
+
+  initLocalSetting('#gender div', 'calculating__choose-item_active');
+  initLocalSetting('.calculating__choose_big div', 'calculating__choose-item_active');
+
+
+  function caclTotal() {
+
+    if (!gender || !height || !weight || !age || !ratio) {
+      result.innerHTML = '_____';
+      return;
+    }
+
+    if (gender == 'female') {
+      result.textContent = Math.round((447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)) * ratio);
+    } else {
+      result.textContent = Math.round((88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)) * ratio);
+    }
+  }
+
+  caclTotal();
+
+  function getStaticInfo(selector, activeClass) {
+    const elements = document.querySelectorAll(selector);
+
+    elements.forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.getAttribute('data-ratio')) {
+          ratio = e.target.getAttribute('data-ratio');
+          localStorage.setItem('ratio', ratio);
+        } else {
+          gender = e.target.getAttribute('id');
+          localStorage.setItem('gender', gender);
+        }
+
+        elements.forEach(item => {
+          item.classList.remove(activeClass);
+        });
+        e.target.classList.add(activeClass);
+        caclTotal();
+      });
+    });
+  }
+
+  getStaticInfo('#gender div', 'calculating__choose-item_active');
+  getStaticInfo('.calculating__choose_big div', 'calculating__choose-item_active');
+
+
+  function getDunamicInfo(selector) {
+
+    const input = document.querySelector(selector);
+
+    input.addEventListener('input', () => {
+
+      if (input.value.match(/\D/g)) {
+        input.style.border = '1px solid red';
+      } else {
+        input.style.border = 'none';
+      }
+
+
+      switch(input.getAttribute('id')) {
+        case 'height': {
+          height = +input.value;
+          break;
+        }
+        case 'weight': {
+          weight = +input.value;
+          break;
+        }
+        case 'age': {
+          age = +input.value;
+          break;
+        }
+      }
+      caclTotal();
+    });
+
+  }
+
+  getDunamicInfo('#height');
+  getDunamicInfo('#weight');
+  getDunamicInfo('#age');
 
 });
 
